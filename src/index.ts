@@ -20,5 +20,8 @@ export type { XzibitMarkProps } from './XzibitMark';
 export { useApps } from './useApps';
 export type { UseAppsResult, UseAppsOptions } from './useApps';
 
+export { ContentContainer } from './ContentContainer';
+export type { ContentContainerProps, ContentTier } from './ContentContainer';
+
 export type { App, RawApp, AppsResponse } from './types';
 export { normalizeApp } from './types';

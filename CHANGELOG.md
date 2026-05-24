@@ -2,6 +2,22 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.2.0] — 2026-05-24
+
+### Added
+
+- **`<ContentContainer tier="...">`** — implements DESIGN-STANDARD v2.4 §Content Density Tiers. Three tiers: `'editorial'` (720px), `'reference'` (1200px, DEFAULT), `'data'` (unconstrained with 32px side padding). Drop-in wrapper for `<main>` content. Per-page overrides via `tier` prop.
+- **`ContentTier`** type exported for app authors wanting to type tier props at their own layer.
+
+### Coming next
+
+- `<Toast />` + `useToast()` — wrapper around `sonner` per DESIGN-STANDARD §Toast / Notification (v2.2). Will ship as v0.2.1 once drafted.
+- `<Modal />` — wrapper around `@radix-ui/react-dialog` per DESIGN-STANDARD §Modal / Dialog (v2.2). Will ship as v0.2.2 once drafted.
+
+(Joel chose Option A 2026-05-24 — fast-ship v0.2.0 with just ContentContainer to unblock portfolio-wide adoption of the new content tier system. Toast + Modal ship as subsequent patches.)
+
+---
+
 ## [0.1.1] — 2026-05-24
 
 ### Fixed
