@@ -1,0 +1,61 @@
+{
+  "name": "@xzibit/ui",
+  "version": "0.1.0",
+  "description": "Shared chrome components for the Xzibit Apps portfolio. v0.1: TopBar + BackToLauncher + AppsDropdown + XzibitMark + useApps hook. Single source of truth for portfolio chrome — tweak once, every app picks it up on next deploy.",
+  "license": "MIT",
+  "author": "Xzibit Apps",
+  "homepage": "https://github.com/xzibit-apps/xzibit-ui#readme",
+  "bugs": {
+    "url": "https://github.com/xzibit-apps/xzibit-ui/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xzibit-apps/xzibit-ui.git"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "xzibit",
+    "react",
+    "ui",
+    "chrome",
+    "topbar"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "tsup": "^8.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
