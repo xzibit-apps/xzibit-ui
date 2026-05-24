@@ -146,7 +146,7 @@ This sets `--xz-charcoal`, `--xz-teal`, `--xz-white`, `--border`, etc. — and `
 | `<AppsDropdown />` | Sectioned + alphabetical apps dropdown driven by `/api/me/apps` |
 | `<XzibitMark size={28} />` | Xzibit X brand mark as inline SVG (any size, any density) |
 | `useApps()` | React hook fetching `/api/me/apps` with loading + error + refetch |
-| `<ContentContainer tier="reference">` *(v0.2+)* | Content max-width container per DESIGN-STANDARD v2.4 §Content Density Tiers — tiers: `'editorial'` (720px), `'reference'` (1200px, default), `'data'` (unconstrained). Wraps `<main>` content. |
+| `<ContentContainer tier="reference">` *(v0.2+)* | Content max-width container per DESIGN-STANDARD v2.4 §Content Density Tiers — tiers: `'editorial'` (720px), `'reference'` (1200px, default), `'data'` (unconstrained). Wraps `<main>` content. v0.3+ adds `disablePadding` prop for app-shell integration where layout already provides padding (e.g. left-nav offset). |
 
 ---
 

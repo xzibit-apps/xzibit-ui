@@ -1,6 +1,6 @@
 {
   "name": "@xzibit/ui",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shared chrome components for the Xzibit Apps portfolio. v0.1: TopBar + BackToLauncher + AppsDropdown + XzibitMark + useApps hook. Single source of truth for portfolio chrome — tweak once, every app picks it up on next deploy.",
   "license": "MIT",
   "author": "Xzibit Apps",

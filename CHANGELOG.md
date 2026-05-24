@@ -2,6 +2,28 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-05-24
+
+### Added
+
+- **`disablePadding` prop on `<ContentContainer>`** — when `true`, renders no padding (only `max-width` + `margin: 0 auto`). For app-shell integration where the parent layout already provides padding (e.g. left-nav offset), preventing the tier padding from stacking and reducing effective content width.
+
+  ```tsx
+  <ContentContainer tier="reference" disablePadding>
+    {/* shell-managed padding flows through */}
+  </ContentContainer>
+  ```
+
+### Why
+
+ERP Overview Phase 1.13 (the canonical `<ContentContainer>` migration ship 2026-05-24) surfaced a left-nav stacking conflict: the per-page outer div uses `padding: '2.5rem 2.5rem 2.5rem 280px'` (left-nav offset), and stacking the container's `3rem 2rem` reduces effective width on wide monitors from the spec's 1200px to ~816px. Their resolution — `className="content-container--layout"` + `!important` padding zero — works but is a smell. `disablePadding` is the canonical API. Every left-nav-bearing portfolio app will hit this same conflict; this prop is the right answer for v0.3 before the portfolio-wide broadcast.
+
+### Backward compatible
+
+`disablePadding` defaults to `false`. v0.2.x adopters who don't set it see no change. v0.3+ is the recommended version for app-shell integration; v0.2.x is fine for page-level adoption where shell padding isn't a concern.
+
+---
+
 ## [0.2.0] — 2026-05-24
 
 ### Added

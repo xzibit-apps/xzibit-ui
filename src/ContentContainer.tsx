@@ -16,6 +16,23 @@ export interface ContentContainerProps {
    */
   tier?: ContentTier;
 
+  /**
+   * If `true`, render no padding — useful when the parent app shell already
+   * provides layout-level padding (e.g. left-nav offset).
+   *
+   * Default: `false` (tier padding is applied).
+   *
+   * **Common use case:** app-shell `layout.tsx` integration where the surrounding
+   * layout div sets `padding: '2.5rem 2.5rem 2.5rem 280px'` for left-nav offset.
+   * Without `disablePadding`, the container's `3rem 2rem` stacks with the shell
+   * padding and reduces effective content width (e.g. 1200px ContentContainer
+   * minus 64px container padding minus 320px shell padding ≈ 816px actual).
+   *
+   * Added in v0.3.0 (2026-05-24) after ERP Overview Phase 1.13 surfaced the
+   * left-nav stacking conflict.
+   */
+  disablePadding?: boolean;
+
   /** Optional className for additional styling. */
   className?: string;
 
@@ -23,10 +40,16 @@ export interface ContentContainerProps {
   children: ReactNode;
 }
 
-const TIER_STYLES: Record<ContentTier, CSSProperties> = {
-  editorial: { maxWidth: 720, margin: '0 auto', padding: '3rem 2rem' },
-  reference: { maxWidth: 1200, margin: '0 auto', padding: '3rem 2rem' },
-  data: { maxWidth: '100%', margin: '0 auto', padding: '1.5rem 2rem' },
+const TIER_MAX_WIDTH: Record<ContentTier, number | string> = {
+  editorial: 720,
+  reference: 1200,
+  data: '100%',
+};
+
+const TIER_PADDING: Record<ContentTier, string> = {
+  editorial: '3rem 2rem',
+  reference: '3rem 2rem',
+  data: '1.5rem 2rem',
 };
 
 /**
@@ -56,11 +79,17 @@ const TIER_STYLES: Record<ContentTier, CSSProperties> = {
  */
 export function ContentContainer({
   tier = 'reference',
+  disablePadding = false,
   className,
   children,
 }: ContentContainerProps) {
+  const style: CSSProperties = {
+    maxWidth: TIER_MAX_WIDTH[tier],
+    margin: '0 auto',
+    ...(disablePadding ? {} : { padding: TIER_PADDING[tier] }),
+  };
   return (
-    <div className={className} style={TIER_STYLES[tier]}>
+    <div className={className} style={style}>
       {children}
     </div>
   );
