@@ -1,4 +1,3 @@
-import React from 'react';
 import { BackToLauncher } from './BackToLauncher';
 import { AppsDropdown } from './AppsDropdown';
 

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface XzibitMarkProps {
   /** Size in pixels (square). Default 28 to fit inside the 44px TopBar. */
   size?: number;

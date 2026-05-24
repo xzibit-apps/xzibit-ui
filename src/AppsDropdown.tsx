@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { useApps } from './useApps';
 import type { App } from './types';
 
