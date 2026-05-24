@@ -1,6 +1,6 @@
 {
   "name": "@xzibit/ui",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Shared chrome components for the Xzibit Apps portfolio. v0.1: TopBar + BackToLauncher + AppsDropdown + XzibitMark + useApps hook. Single source of truth for portfolio chrome — tweak once, every app picks it up on next deploy.",
   "license": "MIT",
   "author": "Xzibit Apps",
@@ -37,8 +37,8 @@
     "topbar"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
@@ -46,11 +46,12 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "tsup": "^8.0.0",
+    "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@types/node": "^20.0.0"
+    "esbuild-plugin-preserve-directives": "^0.0.11",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"

@@ -1,3 +1,5 @@
+'use client';
+
 import { BackToLauncher } from './BackToLauncher';
 import { AppsDropdown } from './AppsDropdown';
 

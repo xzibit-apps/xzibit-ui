@@ -14,9 +14,25 @@ Shared chrome components for the Xzibit Apps portfolio. Single source of truth �
 npm install @xzibit/ui
 ```
 
-Peer dependencies: `react@^18`, `react-dom@^18`.
+Peer dependencies: `react@^18 || ^19`, `react-dom@^18 || ^19`.
 
 (Recommended companion: `@xzibit/tokens` for CSS variable values — without it, components fall back to inline hex defaults.)
+
+### Next.js App Router compatibility (v0.3.1+)
+
+`TopBar`, `AppsDropdown`, `BackToLauncher`, and `useApps` are Client Components — they carry a `'use client'` directive in the bundled output (preserved through tsup via `esbuild-plugin-preserve-directives`). You can import them directly into Server Components (e.g. `app/layout.tsx` and `app/page.tsx`) without wrapping them in a local `'use client'` re-export. Next.js sees the directive at the package boundary and renders them client-side automatically.
+
+`ContentContainer` and `XzibitMark` have no client-only code (no hooks, no event handlers) — they're server-safe and unmarked.
+
+Versions v0.1.0 – v0.3.0 shipped without preserved directives. Consumers on those versions need a local wrapper:
+
+```tsx
+// src/components/TopBarClient.tsx — only needed on v0.1.0 – v0.3.0
+'use client';
+export { TopBar } from '@xzibit/ui';
+```
+
+…then import the wrapper instead of the package directly. **Upgrade to v0.3.1+ and delete the wrapper.**
 
 ---
 

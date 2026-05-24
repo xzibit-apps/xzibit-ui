@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
 import { normalizeApp } from './types';
 import type { App, AppsResponse } from './types';

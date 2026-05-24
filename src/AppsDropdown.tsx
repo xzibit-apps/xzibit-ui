@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { useApps } from './useApps';
 import type { App } from './types';

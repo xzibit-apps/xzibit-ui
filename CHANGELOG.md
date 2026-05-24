@@ -2,6 +2,56 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.3.1] — 2026-05-24
+
+### Fixed
+
+- **`'use client'` directives now ship in the bundled output.** Source files for `TopBar`, `AppsDropdown`, `BackToLauncher`, and `useApps` now carry a top-of-file `'use client'` directive, and the build (tsup + new `esbuild-plugin-preserve-directives`) preserves these directives in both ESM and CJS output. Previous versions (v0.1.0 – v0.3.0) stripped the directives at build time, which caused Next.js App Router to attempt server-side rendering of `useState`-bearing components and crash during prerender (`TypeError: (0 , d.useState) is not a function`).
+
+  Concretely: any consumer importing `TopBar` (or `AppsDropdown` / `BackToLauncher` / `useApps`) directly into a Server Component (default for `app/layout.tsx` and `app/page.tsx` files in Next.js 13+) would fail at build time with an exit-code-1 prerender error. ERP Overview Phase 1.11–1.13 deployments all hit this and silently failed Vercel deploys for three consecutive ships (live site continued serving the Phase 1.10 cached build, which masked the failures from reporting).
+
+  After upgrading to v0.3.1, no consumer-side workaround is required. Direct import into Server Components works.
+
+### Why this happened
+
+esbuild's default behaviour is to strip top-of-file directives during bundling. tsup wraps esbuild and inherits this default. Without an explicit plugin (`esbuild-plugin-preserve-directives`), source-file `'use client'` declarations disappear from the dist output, leaving consumers to wrap the imports themselves in a local `'use client'` re-export module — the workaround ERP Overview shipped as Phase 1.14's `src/components/TopBarClient.tsx`.
+
+### Build config change
+
+- **NEW** `tsup.config.ts` replaces the inline `tsup src/index.ts --format cjs,esm --dts --clean` script. Equivalent flags, plus `esbuildPlugins: [preserveDirectives()]`.
+- **NEW devDependency:** `esbuild-plugin-preserve-directives@^0.0.11`.
+- `scripts.build` simplified to `tsup` (reads `tsup.config.ts`); same for `dev`.
+
+### Consumer migration after v0.3.1 lands
+
+If you previously created a local `'use client'` wrapper for `TopBar` (or any other v0.3.0 export), you can now delete the wrapper and import directly from `@xzibit/ui` into your Server Component layout. See ERP Overview SHA `9fb78a4` for the pre-fix workaround pattern; SHA after Phase 1.15 will show the post-fix clean pattern.
+
+### Backward compatible
+
+API surface unchanged from v0.3.0. Same exports, same prop signatures, same default behaviour. v0.3.1 is a strict bug-fix release.
+
+### Acceptance test (for future package work)
+
+In a fresh Next.js 14+ App Router scaffold, place this in `app/layout.tsx`:
+
+```tsx
+import { TopBar } from '@xzibit/ui';
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <TopBar appName="Test App" />
+        <main style={{ marginTop: 44 }}>{children}</main>
+      </body>
+    </html>
+  );
+}
+```
+
+Then `npm run build` must complete without a `useState is not a function` error and Vercel must report READY. This is the canonical regression test for the v0.3.1 fix.
+
+---
+
 ## [0.3.0] — 2026-05-24
 
 ### Added
