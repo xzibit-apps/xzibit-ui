@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { normalizeApp } from './types';
 import type { App, AppsResponse } from './types';
 
 export interface UseAppsResult {
@@ -48,7 +49,11 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
       if (data.error) {
         throw new Error(data.error);
       }
-      setApps(data.apps ?? []);
+      // Normalize raw API rows to the canonical App shape at the fetch boundary.
+      // Accepts both canonical field names (url, section, section_order) and Supabase
+      // raw column names (app_url, display_section, display_order) — see RawApp type.
+      // Added in v0.1.1 (2026-05-24) after ERP Overview migration surfaced the contract mismatch.
+      setApps((data.apps ?? []).map(normalizeApp));
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('[@xzibit/ui useApps] fetch failed:', err);

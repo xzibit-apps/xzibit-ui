@@ -20,4 +20,5 @@ export type { XzibitMarkProps } from './XzibitMark';
 export { useApps } from './useApps';
 export type { UseAppsResult, UseAppsOptions } from './useApps';
 
-export type { App, AppsResponse } from './types';
+export type { App, RawApp, AppsResponse } from './types';
+export { normalizeApp } from './types';

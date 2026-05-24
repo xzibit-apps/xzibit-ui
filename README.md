@@ -58,7 +58,15 @@ That's it. The bar renders:
 
 ### `/api/me/apps` endpoint required
 
-`AppsDropdown` calls `GET /api/me/apps` (same-origin) for the cross-app navigation list. Each consuming app must expose this endpoint per CODING-STANDARDS §6.3:
+`AppsDropdown` calls `GET /api/me/apps` (same-origin) for the cross-app navigation list. Each consuming app must expose this endpoint per CODING-STANDARDS §6.3.
+
+**Field-name contract (v0.1.1+):** the endpoint can return EITHER:
+- **Canonical shape** (recommended for new endpoints): `{ name, url, description?, section?, section_order? }`
+- **Supabase column-name passthrough** (for endpoints that return raw `public.apps` rows): `{ name, app_url, description?, display_section?, display_order? }`
+
+`useApps` normalizes both shapes to the canonical `App` interface at the fetch boundary — components downstream never see the raw form. Apps with existing endpoints that return raw column names work without changes.
+
+Example route handler:
 
 ```typescript
 // src/app/api/me/apps/route.ts
