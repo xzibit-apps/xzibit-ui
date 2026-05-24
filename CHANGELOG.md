@@ -2,6 +2,33 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.3.2] — 2026-05-24
+
+### Changed
+
+- **`<XzibitMark />` now renders the canonical brand X.** Previous versions (v0.1.0 – v0.3.1) rendered a hand-drawn approximation: four straight strokes meeting at a centre point, contained inside a solid black square stamp. v0.3.2 replaces both elements with the brand-faithful mark — two mirrored stylised "chevron" halves with stepped/notched outer terminations, crossing in the middle with a small central void. No background fill; the mark is rendered as filled paths in `currentColor` so it inherits the surrounding text colour (useful inside the dark TopBar where text is white).
+
+  The paths were extracted from the canonical raster asset at `brand/xzibit-mark.png` (591×591, Joel-provided) via `scikit-image.measure.find_contours` + `approximate_polygon(tolerance=2.5)`, then normalised to a `viewBox="0 0 100 100"`.
+
+### Added
+
+- **`fill` prop on `<XzibitMark />`** — defaults to `currentColor`. Override for explicit colour control if the mark needs to differ from its surrounding text.
+
+### Visual impact
+
+- **TopBar consumers (v0.3.0 – v0.3.1):** the brand-faithful X replaces the placeholder geometric X. Visible change. No code change required by consumers — just bump the package and re-deploy.
+- **Standalone `<XzibitMark />` consumers:** the black square background is GONE. If you were relying on the self-contained black stamp for contrast against a non-charcoal background, wrap the mark in a `<div style={{ background: '#000', padding: ... }}>` or set `fill` explicitly.
+
+### Why this matters
+
+The placeholder approximation was a v0.1.0 stopgap until the brand asset was available. Shipping the canonical mark closes a long-standing gap — the TopBar now displays the actual Xzibit logo, not a hand-drawn stand-in. Per DS Cowork's brand-asset note: "do not invent brand marks; if the canonical asset isn't available, ship a placeholder and flag it for replacement."
+
+### Backward compatible (with one nuance)
+
+Same export name, same API surface, same default prop signatures. The `fill` prop is new and optional. The visual change is intentional. Consumers wanting the v0.1.0-style stamp can render `<div style={{ background: '#000' }}><XzibitMark fill="#fff" /></div>` themselves, but the recommendation is to let the canonical mark stand on its own.
+
+---
+
 ## [0.3.1] — 2026-05-24
 
 ### Fixed
