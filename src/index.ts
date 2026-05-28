@@ -23,5 +23,8 @@ export type { UseAppsResult, UseAppsOptions } from './useApps';
 export { ContentContainer } from './ContentContainer';
 export type { ContentContainerProps, ContentTier } from './ContentContainer';
 
+export { BuildBadge } from './BuildBadge';
+export type { BuildBadgeProps } from './BuildBadge';
+
 export type { App, RawApp, AppsResponse } from './types';
 export { normalizeApp } from './types';

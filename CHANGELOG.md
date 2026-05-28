@@ -2,6 +2,52 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.3.3] — 2026-05-28
+
+### Added
+
+- **`<BuildBadge sha={...} timestamp={...} />` exported component.** Fixed-position white pill in the corner of the viewport (top-right default; `position="top-left"` available), displaying SHA in monospace + `·` separator + "Last updated {timestamp}" in muted text. Renders ALONGSIDE the TopBar (not inside it) — sits at z-index 9999 above the TopBar's 100 and looks like a small tab attached to the corner.
+
+  ```tsx
+  // src/app/layout.tsx
+  import { TopBar, BuildBadge } from '@xzibit/ui';
+
+  export default function RootLayout({ children }) {
+    return (
+      <html><body>
+        <TopBar appName="ERP Overview" />
+        <BuildBadge
+          sha={process.env.NEXT_PUBLIC_BUILD_SHA ?? 'local'}
+          timestamp={process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()}
+        />
+        <main style={{ marginTop: 44 }}>{children}</main>
+      </body></html>
+    );
+  }
+  ```
+
+  - **Style:** white background (`var(--xz-white, #FFFFFF)`), 1px border `var(--border)` on bottom + the inside edge, 6px corner radius on the inside-bottom corner, 0.25rem × 0.625rem padding, 11px text (`0.6875rem`), monospace SHA in `var(--foreground)`, dot separator in `var(--border)`, "Last updated…" in `var(--muted-foreground)`.
+  - **Timestamp formatting:** if you pass a raw ISO string (e.g. `process.env.NEXT_PUBLIC_BUILD_TIME` from a build step that writes the build time as ISO), the badge formats it in Brisbane time (`en-AU`, `Australia/Brisbane`, 12-hour, `21 May 2026, 5:03 pm AEST`). If you pass a pre-formatted string, it renders as-is.
+  - **No `'use client'` directive** — server-safe. Renders identically in Server Components and Client Components.
+
+### Deprecated (will be removed in v0.4)
+
+- **`<TopBar buildSha={...} buildTimestamp={...} />` props.** The TopBar no longer renders its own internal build badge. Passing the props logs a one-shot `console.warn` and the props are ignored. **Migration:** add `<BuildBadge sha={...} timestamp={...} />` to your root layout next to `<TopBar />` and drop the props from the TopBar call.
+
+  Rationale: the previous in-bar badge was `rgba(255, 255, 255, 0.5)` faint text against the dark TopBar — legible but visually weak. Joel's preference (surfaced 2026-05-28 from launcher CC's Staff App build) is the white-pill overlay style — much higher contrast and treats the build provenance as a first-class corner artifact rather than chrome noise. The overlay also leaves the right side of the TopBar's 44px bar free for future affordances.
+
+### Why this matters
+
+The build badge is the canonical mechanism for cross-app deploy provenance — Joel uses it to verify SHA on live URL matches SHA on main (per the production-verification convention from Phase 1.16). The new style makes the SHA + timestamp readable at a glance without having to lean in. Every Xzibit App should adopt this in their root layout.
+
+### Backward compatible (with deprecation warnings)
+
+- `<TopBar>` API surface unchanged at the type level; deprecated props log a warning but don't error
+- Existing consumers (ERP Overview v0.3.0–v0.3.2, Staff App pre-launcher-CC-overlay) will see the warning + lose the in-bar badge silently. Add `<BuildBadge>` to restore the visual + upgrade to the new style.
+- All other exports (`TopBar`, `BackToLauncher`, `AppsDropdown`, `XzibitMark`, `useApps`, `ContentContainer`, `normalizeApp`) unchanged from v0.3.2
+
+---
+
 ## [0.3.2] — 2026-05-24
 
 ### Changed

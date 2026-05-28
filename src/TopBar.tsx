@@ -10,13 +10,19 @@ export interface TopBarProps {
   /** Optional click target for the app wordmark. Defaults to "/" (app home). */
   appHomeUrl?: string;
 
-  /** Build SHA — typically `process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)`. */
+  /**
+   * @deprecated as of v0.3.3 — render `<BuildBadge sha={...} />` in your root
+   * layout instead. The TopBar no longer displays the build badge internally;
+   * this prop is ignored and will be removed in v0.4. The new badge sits as a
+   * fixed overlay in the corner of the viewport (see BuildBadge component) and
+   * supports white-pill styling that's more legible than the previous in-bar
+   * faint-text treatment. Reference impl: xzibit-apps/launcher root layout
+   * (Staff App style, 2026-05-28).
+   */
   buildSha?: string;
 
   /**
-   * Last-updated timestamp string. Pre-format on the consumer side
-   * (e.g. "22 May 2026, 5:03 pm AEST"). Brisbane time recommended per
-   * portfolio convention.
+   * @deprecated as of v0.3.3 — see `buildSha`.
    */
   buildTimestamp?: string;
 
@@ -41,11 +47,24 @@ export interface TopBarProps {
 export function TopBar({
   appName,
   appHomeUrl = '/',
-  buildSha,
-  buildTimestamp,
+  buildSha: _deprecatedBuildSha,
+  buildTimestamp: _deprecatedBuildTimestamp,
   launcherUrl,
   appsEndpoint,
 }: TopBarProps) {
+  if (
+    typeof console !== 'undefined' &&
+    (_deprecatedBuildSha || _deprecatedBuildTimestamp)
+  ) {
+    // One-shot deprecation warning. Surface loudly so consumers migrate.
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[@xzibit/ui] <TopBar buildSha|buildTimestamp> props are deprecated as of v0.3.3. ' +
+        'Render <BuildBadge sha={...} timestamp={...} /> in your root layout instead. ' +
+        'The props are ignored and will be removed in v0.4.'
+    );
+  }
+
   return (
     <header
       style={{
@@ -82,15 +101,10 @@ export function TopBar({
       <VerticalSeparator />
       <AppsDropdown endpoint={appsEndpoint} />
 
-      <div
-        style={{
-          marginLeft: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {buildSha && <BuildBadge sha={buildSha} timestamp={buildTimestamp} />}
-      </div>
+      {/*
+        Build badge moved out of TopBar in v0.3.3 — render <BuildBadge /> in
+        root layout instead. See BuildBadge component + CHANGELOG v0.3.3.
+      */}
     </header>
   );
 }
@@ -147,26 +161,9 @@ function AppWordmark({
   );
 }
 
-function BuildBadge({
-  sha,
-  timestamp,
-}: {
-  sha: string;
-  timestamp?: string;
-}) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-        fontSize: '11px',
-        fontWeight: 400,
-        color: 'rgba(255, 255, 255, 0.5)',
-        padding: '0 1rem',
-      }}
-    >
-      {sha}
-      {timestamp && ` · Last updated ${timestamp}`}
-    </div>
-  );
-}
+/*
+  The in-bar BuildBadge helper was removed in v0.3.3. The canonical BuildBadge
+  now lives as a top-level exported component (src/BuildBadge.tsx) that renders
+  a fixed-position white pill in the corner of the viewport, ALONGSIDE the
+  TopBar rather than inside it. See CHANGELOG v0.3.3.
+*/

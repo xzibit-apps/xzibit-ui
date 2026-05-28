@@ -163,6 +163,7 @@ This sets `--xz-charcoal`, `--xz-teal`, `--xz-white`, `--border`, etc. — and `
 | `<XzibitMark size={28} />` | Xzibit X brand mark as inline SVG (any size, any density) |
 | `useApps()` | React hook fetching `/api/me/apps` with loading + error + refetch |
 | `<ContentContainer tier="reference">` *(v0.2+)* | Content max-width container per DESIGN-STANDARD v2.4 §Content Density Tiers — tiers: `'editorial'` (720px), `'reference'` (1200px, default), `'data'` (unconstrained). Wraps `<main>` content. v0.3+ adds `disablePadding` prop for app-shell integration where layout already provides padding (e.g. left-nav offset). |
+| `<BuildBadge sha={...} timestamp={...} />` *(v0.3.3+)* | Canonical build provenance badge per DESIGN-STANDARD v2.5 §Build Badge. White-pill overlay fixed in the corner of the viewport (top-right default; `position="top-left"` available). Renders alongside `<TopBar />` in your root layout, not inside it. Accepts raw ISO timestamps and formats them in Brisbane time, or pre-formatted strings rendered as-is. Replaces the deprecated in-bar badge that used to live inside `<TopBar buildSha buildTimestamp>` (props now no-op + warn). |
 
 ---
 
