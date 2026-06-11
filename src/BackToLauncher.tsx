@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { XzibitMark } from './XzibitMark';
-import { XzibitWordmark } from './XzibitWordmark';
 
 export interface BackToLauncherProps {
   /** Launcher URL — defaults to the production Xzibit Apps launcher. */
@@ -14,22 +13,22 @@ const DEFAULT_LAUNCHER_URL = 'https://xzibit-apps.vercel.app';
 /**
  * Back-to-launcher anchor for the TopBar's left cluster.
  *
- * v0.4.0 (2026-06-11) visual amendment, no API change:
- * - Renders `[grid icon] [X mark teal] [Xzibit wordmark white] [Apps qualifier]`
- *   inside a single `<a>` element so the whole cluster is one click target with
- *   one navigation destination (the launcher).
- * - The leading chevron-left icon from v0.3.x is removed. The grid icon takes
- *   its place as the "all apps" affordance.
- * - The "Xzibit Apps" text element is replaced with the canonical Xzibit
- *   wordmark SVG outlines (white) followed by a small "Apps" qualifier (light
- *   weight, light tint).
- * - Cross-deployment navigation, uses native anchor not Next.js Link.
+ * v0.4.1 (2026-06-11) visual amendment, no API change:
+ * - Renders `[grid icon] [X mark teal] [Apps text]` inside a single `<a>` element
+ *   so the whole cluster is one click target with one navigation destination
+ *   (the launcher).
+ * - The Xzibit wordmark SVG that v0.4.0 introduced between the X mark and the
+ *   qualifier is removed. The brand X carries the Xzibit identity, "Apps" is
+ *   the qualifier text.
+ * - "Apps" promoted from 13px / 400 / 74% white to 15px / 500 / full white so
+ *   it carries the lockup's weight now that the wordmark is gone.
+ * - The chevron-left from v0.3.x is still gone (removed in v0.4.0).
+ * - Cross-deployment navigation. Uses native anchor, NOT Next.js Link.
  *
- * Per DESIGN-STANDARD v2.6 §Top Bar:
- * - Grid icon 18px at 82% white (full white on hover)
- * - X mark height 22, teal #19B1A1 (Pantone 3262 CP brand teal)
- * - Wordmark height 18, white via currentColor
- * - "Apps" qualifier 13px, 74% white, light weight
+ * `<XzibitWordmark>` remains exported from the package as a standalone primitive
+ * for other use cases (marketing pages, the standards site landing, etc.).
+ *
+ * Per DESIGN-STANDARD v2.6 §Top Bar.
  */
 export function BackToLauncher({
   launcherUrl = DEFAULT_LAUNCHER_URL,
@@ -37,8 +36,7 @@ export function BackToLauncher({
   const [hover, setHover] = useState(false);
 
   const iconColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.82)';
-  const wordmarkColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.95)';
-  const qualifierColor = hover ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.74)';
+  const qualifierColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.95)';
   const bgColor = hover ? 'rgba(255, 255, 255, 0.07)' : 'transparent';
 
   return (
@@ -78,11 +76,10 @@ export function BackToLauncher({
         <rect x="14" y="14" width="6" height="6" rx="1" />
       </svg>
       <XzibitMark size={22} />
-      <XzibitWordmark size={18} fill={wordmarkColor} />
       <span
         style={{
-          fontSize: '13px',
-          fontWeight: 400,
+          fontSize: '15px',
+          fontWeight: 500,
           color: qualifierColor,
           letterSpacing: '0.01em',
         }}

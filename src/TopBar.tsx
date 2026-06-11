@@ -89,7 +89,10 @@ export function TopBar({
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         // Right padding reserves space for the BuildBadge corner overlay
         // so the rightSlot content (e.g. FeedbackButton) does not collide with it.
-        padding: '0 200px 0 0.875rem',
+        // 320px clears the full Brisbane-time format like
+        // "1730556 · Last updated 11 Jun 2026, 8:00 am AEST" (~310px wide).
+        // v0.4.1 bump from 200px after Joel caught the overlap on ERP Overview.
+        padding: '0 320px 0 0.875rem',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',

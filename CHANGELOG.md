@@ -2,6 +2,44 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.4.1] — 2026-06-11
+
+Visual patch caught by Joel against the live ERP Overview v0.4.0 deploy. Two fixes, both small, both backward compatible.
+
+### Changed (visual)
+
+- **`<BackToLauncher>` lockup simplified.** The Xzibit wordmark SVG that v0.4.0 introduced between the brand X mark and the "Apps" qualifier is removed from the rendered anchor. The brand X carries the Xzibit identity, "Apps" sits next to it as the qualifier. Three visual chunks (grid icon, brand X, "Apps") instead of four. The "Apps" text is promoted from 13px / 400 / 74% white to 15px / 500 / full white so it holds the lockup's weight now that the wordmark is gone. Joel reviewed two mockup rounds and approved the simpler lockup as Option A variant.
+- **`<TopBar>` right padding bumped from 200px to 320px.** The 200px reservation in v0.4.0 was undersized for the full-format BuildBadge ("{sha} · Last updated {date}, {time} {tz}", ~310px wide on production). On ERP Overview's first v0.4.0 deploy the BuildBadge corner overlay sat over the top of the FeedbackButton in the rightSlot. The bump to 320px gives ~10px clearance at the worst case. Apps using a shorter custom timestamp format still work, the slot is wider than they need but the layout is unchanged.
+
+### Unchanged
+
+- `<XzibitWordmark>` exported component stays. It is no longer used inside `<BackToLauncher>`, but it is still useful as a standalone primitive for marketing pages, the standards site landing, and any other context that wants the Xzibit wordmark as inline SVG. API and prop signature unchanged.
+- All other exports (`TopBar`, `AppsDropdown`, `XzibitMark`, `ContentContainer`, `BuildBadge`, `FeedbackButton`, `useApps`, `normalizeApp`) are unchanged from v0.4.0.
+
+### Migration
+
+Bump the dependency and redeploy. No code changes needed in consuming apps. The new lockup and the corner-clearance fix both apply automatically.
+
+```json
+{
+  "dependencies": {
+    "@xzibit/ui": "0.4.1"
+  }
+}
+```
+
+### Acceptance test
+
+In the published tarball:
+
+- `head -3 dist/index.js` still shows `'use client';` (v0.3.1 fix intact).
+- `grep -c "M52.88,49.03" dist/index.js` returns >0 (canonical brand X path data intact).
+- `grep -c "XzibitWordmark" dist/index.d.ts` returns >0 (the type is still exported even though BackToLauncher no longer uses it).
+- `grep -c "320px" dist/index.js` returns >0 (the TopBar right-padding bump landed).
+- `grep -c "Xzibit Apps" dist/index.js` (the literal text) — should NOT change since "Xzibit Apps" was never a literal in the bundle anyway; both the X and the wordmark were SVG.
+
+---
+
 ## [0.4.0] — 2026-06-11
 
 Visual amendment driven by Joel's "ok but not great" call on the header and a Claude Design pass that explored options. Functional API is unchanged. Three new exports add capability without removing or breaking anything in v0.3.x.
