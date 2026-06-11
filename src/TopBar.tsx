@@ -32,6 +32,8 @@ export interface TopBarProps {
   /**
    * Optional right-aligned slot content (v0.4.0+). Typically used to pass a
    * `<FeedbackButton>` for the in-app feedback widget, but accepts any node.
+   * The bar reserves 320px of right padding (v0.4.1+) so the slot's content
+   * sits clear of the BuildBadge corner overlay at full Brisbane-time format.
    * If unset, the bar has no right-side content (the build badge overlay
    * sits outside the bar at z-index 9999 regardless).
    */

@@ -23,6 +23,9 @@ export type { XzibitWordmarkProps } from './XzibitWordmark';
 export { FeedbackButton } from './FeedbackButton';
 export type { FeedbackButtonProps } from './FeedbackButton';
 
+export { FeedbackPanel } from './FeedbackPanel';
+export type { FeedbackPanelProps, FeedbackType } from './FeedbackPanel';
+
 export { useApps } from './useApps';
 export type { UseAppsResult, UseAppsOptions } from './useApps';
 

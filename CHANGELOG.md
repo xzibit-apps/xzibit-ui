@@ -2,6 +2,78 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.4.2] — 2026-06-11
+
+The Feedback button finally does something. v0.4.0 shipped the trigger, v0.4.2 ships the modal it opens.
+
+### Added
+
+- **`<FeedbackPanel>` exported component.** Canonical in-app feedback modal per DESIGN-STANDARD v2.6 §Feedback Widget and Architecture's ADR `f26c4824`. Pairs with `<FeedbackButton>` (the TopBar trigger).
+  - Form fields: Bug or Idea segmented control, Title (required, max 120 chars), Description (required, max 4000 chars).
+  - Auto-captured context line: `Sending from {appName} · {route} · build {sha} · {userEmail}`. All four fields included in the POST body so receiving handlers have the full context.
+  - POST target configurable via `submitUrl` prop. Defaults to `/api/feedback` on the same origin. Apps wanting "same feedback tool across the portfolio" point this at the launcher's `/api/feedback` so all submissions land in one `feedback_submissions` table.
+  - Submit states: idle, submitting (button shows "Sending…"), success (inline confirmation banner, auto-close after 1.4s), error (inline error banner, retry by hitting Submit again).
+  - Built on the native `<dialog>` element so focus trap, Esc-to-close, and inert background come from the browser for free. Zero external modal dependency. Bundle stays small.
+  - 'use client' since stateful. ContentContainer and XzibitMark stay server-safe.
+
+  ```tsx
+  'use client';
+  import { useState } from 'react';
+  import { TopBar, BuildBadge, FeedbackButton, FeedbackPanel } from '@xzibit/ui';
+
+  export default function RootLayout({ children }) {
+    const [feedbackOpen, setFeedbackOpen] = useState(false);
+    return (
+      <html><body>
+        <TopBar
+          appName="ERP Overview"
+          rightSlot={<FeedbackButton onClick={() => setFeedbackOpen(true)} />}
+        />
+        <BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />
+        <FeedbackPanel
+          open={feedbackOpen}
+          onClose={() => setFeedbackOpen(false)}
+          appName="ERP Overview"
+          submitUrl="https://xzibit-apps.vercel.app/api/feedback"
+          buildSha={BUILD_SHA}
+          userEmail={currentUser?.email}
+        />
+        <main style={{ marginTop: 44 }}>{children}</main>
+      </body></html>
+    );
+  }
+  ```
+
+### Deferred to v0.4.3
+
+- **Screenshot capture.** ADR `f26c4824` mentioned a screenshot attached to every submission. Implementing that ships html2canvas (~50KB minified) into the bundle, which is meaningful for a small package. Deferring to v0.4.3 so v0.4.2 lands fast. Form + auto-context covers ~80% of the value. v0.4.3 lazy-loads html2canvas only when the modal opens so the base bundle stays small.
+
+### Architecture dependency (out of DS Cowork scope)
+
+For end-to-end feedback to work, Architecture still needs to ship:
+
+1. The `feedback_submissions` schema migration (per ADR `f26c4824`).
+2. The receiving `/api/feedback` handler that validates the POST body and writes a row to `feedback_submissions`. Hosting on the launcher gives apps a single shared endpoint.
+3. CORS allowance for the consuming app origins so cross-origin POST works.
+
+DS Cowork has sister-requested Architecture for this. Until it lands, the modal opens and accepts input but Submit returns an error (404 or CORS reject). That's a "the backend isn't built yet" state, not a bug in the panel.
+
+### Backward compatible
+
+API surface from v0.4.1 unchanged. The new `<FeedbackPanel>` is purely additive. v0.4.1 consumers upgrade with a one-line dep bump and immediately get the modal as an exported component.
+
+### Acceptance test
+
+In the published tarball:
+
+- `head -3 dist/index.js` still shows `'use client';` (v0.3.1 fix intact).
+- `grep -c "M52.88,49.03" dist/index.js` returns >0 (canonical brand X path data intact).
+- `grep -c "FeedbackPanel" dist/index.d.ts` returns >0 (the new export is in the public types).
+- `grep -c "showModal" dist/index.js` returns >0 (the native dialog mechanics made it into the bundle).
+- `grep -c "320px" dist/index.js` returns >0 (v0.4.1 right-padding fix still in place).
+
+---
+
 ## [0.4.1] — 2026-06-11
 
 Visual patch caught by Joel against the live ERP Overview v0.4.0 deploy. Two fixes, both small, both backward compatible.
