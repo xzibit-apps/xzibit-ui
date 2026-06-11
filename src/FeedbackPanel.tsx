@@ -51,7 +51,10 @@ const DESC_MAX = 4000;
 // Capture the current viewport, excluding the dialog itself (tagged data-feedback-ignore).
 async function captureScreenshot(): Promise<string | null> {
   try {
-    const { default: html2canvas } = await import('html2canvas');
+    // html2canvas-pro (oklch-aware): the original html2canvas@1.4.1 throws on
+    // modern CSS color functions (oklch/lab), which silently broke screenshot
+    // capture on Tailwind-v4 apps. The pro fork parses them. Same default-export API.
+    const { default: html2canvas } = await import('html2canvas-pro');
     const canvas = await html2canvas(document.body, {
       ignoreElements: (el) => (el as HTMLElement).getAttribute?.('data-feedback-ignore') === 'true',
       logging: false,

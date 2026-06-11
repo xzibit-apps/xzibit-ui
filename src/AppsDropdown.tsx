@@ -64,6 +64,13 @@ export function AppsDropdown({ endpoint }: AppsDropdownProps = {}) {
   const grouped = groupAndSort(apps);
   const hasApps = grouped.length > 0;
 
+  // Graceful degradation (v0.6.1): if the apps endpoint is absent or errors
+  // (e.g. an adopting app that only wants the bar + feedback and never exposed
+  // /api/me/apps → 404), hide the whole Apps trigger rather than rendering a
+  // broken dropdown or a "Failed to load apps" error. No app should surface an
+  // error for an endpoint it deliberately doesn't provide.
+  if (error) return null;
+
   return (
     <div style={{ position: 'relative' }}>
       <button

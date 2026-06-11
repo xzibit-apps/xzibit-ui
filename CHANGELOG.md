@@ -2,6 +2,49 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.6.1] — 2026-06-11
+
+Two fixes surfaced by the Gate-2 rollout, fixed once in the package so every adopting
+app inherits them. No API changes.
+
+### Fixed
+
+- **Screenshot capture on modern-CSS (oklch) apps.** `<FeedbackPanel>` swapped
+  `html2canvas@1.4.1` → `html2canvas-pro@2` for capture. The original throws
+  *"Attempting to parse an unsupported color function oklch"* and returns no
+  screenshot on Tailwind-v4 apps (X-boarding hit this — empty `screenshots`). The
+  pro fork parses oklch/lab, restoring capture. Same dynamic-import, same options,
+  same default-export API — purely an internal dependency swap.
+- **`<TopBar>` Apps-dropdown no longer errors when `/api/me/apps` is absent.** An app
+  that adopts only the bar + feedback (and never exposes the apps endpoint) previously
+  showed an "Apps ▾" trigger that opened to *"Failed to load apps (HTTP 404)"*, and
+  logged a `console.error` (which also leaked into the feedback diagnostics ring
+  buffer). Now: on any fetch error the `<AppsDropdown>` **hides itself entirely** (no
+  trigger, no error UI), and the failure is logged at `console.debug` instead of
+  `console.error`. Apps that DO expose `/api/me/apps` are unaffected.
+
+### Dependencies
+
+- Replaces `html2canvas` with `html2canvas-pro@^2.0.4`. Adopting apps pick this up
+  transitively on bump to `^0.6.1` — no consumer code change.
+
+### Adoption note (optional)
+
+- An app that wants a working app-switcher can opt in by adding a same-origin
+  `/api/me/apps` proxy (same shape as the feedback proxy: read the launcher JWT,
+  forward with `Authorization: Bearer`). Not required for the bar or feedback.
+
+### Acceptance test
+
+In the published tarball:
+
+- `grep -c "html2canvas-pro" dist/index.js` returns >0 (capture uses the pro fork).
+- `grep -c "html2canvas\"" dist/index.js` / bare `import("html2canvas")` returns 0 (old lib gone).
+- `grep -c "if (error) return null" dist/index.js` returns >0 (dropdown degrades).
+- `grep -ci "authenticatedFetch\|notistack\|useAuth" dist/index.js` returns 0 (still decoupled).
+
+---
+
 ## [0.6.0] — 2026-06-11
 
 The shared bar now ships the **full** feedback tool. Until now the rich widget —

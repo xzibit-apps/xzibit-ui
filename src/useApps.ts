@@ -57,8 +57,13 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
       // Added in v0.1.1 (2026-05-24) after ERP Overview migration surfaced the contract mismatch.
       setApps((data.apps ?? []).map(normalizeApp));
     } catch (err) {
+      // v0.6.1: downgraded from console.error to console.debug. A missing/absent
+      // /api/me/apps endpoint (an app that only wants the bar + feedback) is an
+      // expected, handled condition — the AppsDropdown hides itself on `error` —
+      // so it must not spam the console (nor the feedback diagnostics ring buffer,
+      // which wraps console.error).
       // eslint-disable-next-line no-console
-      console.error('[@xzibit/ui useApps] fetch failed:', err);
+      console.debug('[@xzibit/ui useApps] fetch failed (apps dropdown hidden):', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       setApps([]);
     } finally {
