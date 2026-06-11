@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { XzibitMark } from './XzibitMark';
+import { XzibitWordmark } from './XzibitWordmark';
 
 export interface BackToLauncherProps {
   /** Launcher URL — defaults to the production Xzibit Apps launcher. */
@@ -13,23 +14,31 @@ const DEFAULT_LAUNCHER_URL = 'https://xzibit-apps.vercel.app';
 /**
  * Back-to-launcher anchor for the TopBar's left cluster.
  *
- * Renders `[chevron-left] [Xzibit X logo] [Xzibit Apps text]` inside a single
- * `<a>` element so the whole cluster is one click target with one navigation
- * destination. Cross-deployment navigation — uses native anchor, NOT Next.js
- * Link (cross-domain).
+ * v0.4.0 (2026-06-11) visual amendment, no API change:
+ * - Renders `[grid icon] [X mark teal] [Xzibit wordmark white] [Apps qualifier]`
+ *   inside a single `<a>` element so the whole cluster is one click target with
+ *   one navigation destination (the launcher).
+ * - The leading chevron-left icon from v0.3.x is removed. The grid icon takes
+ *   its place as the "all apps" affordance.
+ * - The "Xzibit Apps" text element is replaced with the canonical Xzibit
+ *   wordmark SVG outlines (white) followed by a small "Apps" qualifier (light
+ *   weight, light tint).
+ * - Cross-deployment navigation, uses native anchor not Next.js Link.
  *
- * Per DESIGN-STANDARD v2.3.1:
- * - Text "Xzibit Apps" at 15px / 500 / 85% white (full white on hover)
- * - Chevron 12×12 at 70% white (full white on hover)
- * - X logo 28×28 unchanged on hover (stays native white-on-black stamp)
+ * Per DESIGN-STANDARD v2.6 §Top Bar:
+ * - Grid icon 18px at 82% white (full white on hover)
+ * - X mark height 22, teal #19B1A1 (Pantone 3262 CP brand teal)
+ * - Wordmark height 18, white via currentColor
+ * - "Apps" qualifier 13px, 74% white, light weight
  */
 export function BackToLauncher({
   launcherUrl = DEFAULT_LAUNCHER_URL,
 }: BackToLauncherProps) {
   const [hover, setHover] = useState(false);
 
-  const chevronColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.7)';
-  const textColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.85)';
+  const iconColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.82)';
+  const wordmarkColor = hover ? '#ffffff' : 'rgba(255, 255, 255, 0.95)';
+  const qualifierColor = hover ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.74)';
   const bgColor = hover ? 'rgba(255, 255, 255, 0.07)' : 'transparent';
 
   return (
@@ -43,34 +52,43 @@ export function BackToLauncher({
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '0 1rem',
+        gap: '10px',
+        padding: '0 0.75rem',
         height: '44px',
-        fontSize: '15px',
-        fontWeight: 500,
-        color: textColor,
         background: bgColor,
         textDecoration: 'none',
+        borderRadius: 6,
         transition: 'background 120ms, color 120ms',
       }}
     >
       <svg
-        width={12}
-        height={12}
-        viewBox="0 0 12 12"
+        width={18}
+        height={18}
+        viewBox="0 0 24 24"
         fill="none"
+        stroke={iconColor}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path
-          d="M 8 2 L 3 6 L 8 10"
-          stroke={chevronColor}
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <rect x="4" y="4" width="6" height="6" rx="1" />
+        <rect x="14" y="4" width="6" height="6" rx="1" />
+        <rect x="4" y="14" width="6" height="6" rx="1" />
+        <rect x="14" y="14" width="6" height="6" rx="1" />
       </svg>
-      <XzibitMark size={28} />
-      <span>Xzibit Apps</span>
+      <XzibitMark size={22} />
+      <XzibitWordmark size={18} fill={wordmarkColor} />
+      <span
+        style={{
+          fontSize: '13px',
+          fontWeight: 400,
+          color: qualifierColor,
+          letterSpacing: '0.01em',
+        }}
+      >
+        Apps
+      </span>
     </a>
   );
 }

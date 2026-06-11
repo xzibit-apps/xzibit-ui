@@ -38,18 +38,19 @@ function formatTimestamp(input: string): string {
 }
 
 /**
- * Canonical build provenance badge — small white pill in the corner of the
- * viewport, fixed-positioned, displaying SHA + last-updated timestamp.
+ * Canonical build provenance badge. Small off-white pill in the corner of the
+ * viewport, fixed-positioned, displaying SHA and last-updated timestamp.
  *
- * Per DESIGN-STANDARD v2.5 §Build Badge:
- * - White background, charcoal text — high contrast against any TopBar
- * - Monospace SHA in tinted inline-code style
- * - Separator dot, then "Last updated {timestamp}" in muted-foreground
- * - Bottom-left corner radius 6px (looks like a tab attached to the corner)
- * - Fixed top-right (default), z-index 9999 (above TopBar's 100)
+ * Per DESIGN-STANDARD v2.6 §Build Badge:
+ * - Off-white background (#F4F4F2, a UI utility shade)
+ * - Soft subtle shadow so the bubble lifts off the dark TopBar
+ * - Monospace SHA in brand dark #1D252D
+ * - Separator middot in border colour, then "Last updated {timestamp}" in muted grey
+ * - Bottom-left corner radius 6px, looks like a tab attached to the corner
+ * - Fixed top-right (default), z-index 9999, above the TopBar's 100
  * - Brisbane time formatting if a raw ISO string is passed
  *
- * Render in your root layout, ALONGSIDE (not inside) `<TopBar />`. Pattern:
+ * Render in your root layout, alongside (not inside) `<TopBar />`. Pattern:
  *
  * ```tsx
  * export default function RootLayout({ children }) {
@@ -68,10 +69,8 @@ function formatTimestamp(input: string): string {
  * }
  * ```
  *
- * The deprecated `buildSha` / `buildTimestamp` props on `<TopBar />` are
- * ignored as of v0.3.3 and will be removed in v0.4 — see CHANGELOG.
- *
- * Reference impl: xzibit-apps/launcher root layout (Staff App style, 2026-05-28).
+ * The deprecated `buildSha` / `buildTimestamp` props on `<TopBar />` are ignored
+ * as of v0.3.3 and will be removed in v0.5. See CHANGELOG.
  */
 export function BuildBadge({
   sha,
@@ -90,7 +89,7 @@ export function BuildBadge({
         right: isLeft ? undefined : 0,
         left: isLeft ? 0 : undefined,
         zIndex: 9999,
-        background: 'var(--xz-white, #FFFFFF)',
+        background: 'var(--xz-off-white, #F4F4F2)',
         borderBottom: '1px solid var(--border, #E2E4E5)',
         borderLeft: isLeft ? 'none' : '1px solid var(--border, #E2E4E5)',
         borderRight: isLeft ? '1px solid var(--border, #E2E4E5)' : 'none',
@@ -104,6 +103,7 @@ export function BuildBadge({
         color: 'var(--muted-foreground, #888A8B)',
         fontFamily: 'inherit',
         lineHeight: 1,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
       }}
     >
       <span

@@ -17,6 +17,12 @@ export type { AppsDropdownProps } from './AppsDropdown';
 export { XzibitMark } from './XzibitMark';
 export type { XzibitMarkProps } from './XzibitMark';
 
+export { XzibitWordmark } from './XzibitWordmark';
+export type { XzibitWordmarkProps } from './XzibitWordmark';
+
+export { FeedbackButton } from './FeedbackButton';
+export type { FeedbackButtonProps } from './FeedbackButton';
+
 export { useApps } from './useApps';
 export type { UseAppsResult, UseAppsOptions } from './useApps';
 

@@ -2,6 +2,44 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-06-11
+
+Visual amendment driven by Joel's "ok but not great" call on the header and a Claude Design pass that explored options. Functional API is unchanged. Three new exports add capability without removing or breaking anything in v0.3.x.
+
+### Changed (visual)
+
+- **Brand colour corrected.** The TopBar background moves from `#252E38` (historical drift) to `#1D252D` (Pantone 433 C, the official brand dark from Xzibit's brand colour sheet). Apps using `var(--xz-charcoal)` will tint subtly to the brand-correct value when they pick up v0.4.0 plus matching `@xzibit/tokens`.
+- **`<XzibitMark>` swaps the v0.3.2 contour-traced approximation for the canonical brand SVG path data.** Source: `Xzibit X RGB.svg` from the brand pack, preserved at `apps/standards/docs/brand/`. Fill default changes from `currentColor` to brand teal `#19B1A1` (Pantone 3262 CP) since the mark is always teal in the canonical brand sheet. viewBox changes from `0 0 100 100` to the brand-native `0 0 54.57 49.03`.
+- **`<BackToLauncher>` brand lockup restyle.** Renders as `[grid icon] [X mark teal] [Xzibit wordmark white] [Apps qualifier]` inside a single anchor. The chevron-left from v0.3.x is removed. The "Xzibit Apps" plain text is replaced by the canonical Xzibit wordmark SVG outlines (white) plus a small "Apps" qualifier text. One click target, one destination, no behavioural change.
+- **`<TopBar>` background uses brand `#1D252D`.** Right padding bumped to 200px to reserve a corner zone for the BuildBadge overlay so right-slot content does not collide with it. App name typography tightened (15px / 500, was 18px / 500). Teal app-identity dot bumped from 4px to 6px.
+- **`<BuildBadge>` bubble fill switches from pure white to off-white (`#F4F4F2`).** Adds a subtle `box-shadow: 0 1px 2px rgba(0,0,0,0.04)` so the bubble lifts off the dark TopBar. Internal type and layout are unchanged.
+
+### Added
+
+- **`<XzibitWordmark>`** — exported component. Inline SVG outlines of the canonical Xzibit wordmark, font-independent, fills via `currentColor` by default (white on the dark TopBar). Sized via the `size` prop (height in px), preserves the brand-native aspect ratio.
+- **`<FeedbackButton>`** — exported component. Teal pill (Pantone 3262 CP) with **dark text** (Pantone 433 C) and a message icon. Dark on teal is a WCAG AA contrast decision (5.8:1, vs 2.7:1 for white on teal which fails). Render via the new `<TopBar rightSlot={...}>` prop. Click handler is whatever opens your in-app feedback modal per ADR `f26c4824`.
+- **`<TopBar rightSlot={...}>`** — optional prop. Any ReactNode you pass renders at the right edge of the bar's content area, sized to flex-shrink so the existing left cluster stays visible. The 200px right-side reservation keeps the slot clear of the BuildBadge corner overlay.
+
+### Deprecated (further along the v0.3.3 path)
+
+- `<TopBar buildSha buildTimestamp>` props remain deprecated. v0.3.3 changed them to ignored + warn. v0.4.0 leaves the deprecation in place. Removal target is now v0.5 (not v0.4 as previously stated). Render `<BuildBadge>` in your root layout instead.
+
+### Why this matters
+
+The header is the most-seen surface in the portfolio. Joel approved the visual direction across two mockup rounds. The brand colour correction (#252E38 → #1D252D) is a one-time fix that brings every TopBar back to the official brand. The new exports unlock the Feedback widget rollout per ADR `f26c4824` without per-app reinvention.
+
+### Backward compatible
+
+API surface from v0.3.3 is preserved. Every existing export (TopBar, BackToLauncher, AppsDropdown, XzibitMark, ContentContainer, BuildBadge, useApps, normalizeApp) retains its prop signature. The new optional `rightSlot` prop on TopBar is purely additive. v0.3.3 consumers can upgrade to v0.4.0 with a one-line dependency bump.
+
+### Acceptance test (for regression checks)
+
+- `'use client'` directives still preserved in `dist/index.js` and `dist/index.cjs` head (v0.3.3 fix intact).
+- Brand X path data present in dist (`grep "M52.88,49.03"` returns non-zero).
+- New `XzibitWordmark` and `FeedbackButton` exports surfaced in `dist/index.d.ts`.
+
+---
+
 ## [0.3.3] — 2026-05-28
 
 ### Added

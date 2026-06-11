@@ -1,14 +1,14 @@
 export interface XzibitMarkProps {
-  /** Size in pixels (square). Default 28 to fit inside the 44px TopBar. */
+  /** Size in pixels (height). Default 22 to fit inside the 44px TopBar. */
   size?: number;
   /** Optional className for additional styling. */
   className?: string;
   /** If provided, sets the accessible name. Omit for decorative usage (defaults to aria-hidden). */
   ariaLabel?: string;
   /**
-   * Fill color for the mark strokes. Default `currentColor` so the mark inherits
-   * the surrounding text color (useful inside the dark TopBar where text is white).
-   * Override for explicit colour control.
+   * Fill color for the mark. Default `#19B1A1` (Pantone 3262 CP brand teal). The mark
+   * is teal in the canonical brand sheet regardless of the surrounding context.
+   * Override only when an alternate brand approval is in place.
    */
   fill?: string;
 }
@@ -16,34 +16,33 @@ export interface XzibitMarkProps {
 /**
  * Canonical Xzibit X brand mark, rendered as inline SVG for crisp display at any size.
  *
- * The mark is two mirrored stylised "chevron" shapes — left half and right half —
- * crossing in the middle to form an X with a small central void. Each half has
- * stepped/notched outer terminations rather than flat or rounded caps, which is
- * the brand-defining detail.
+ * v0.4.0 (2026-06-11): replaced the v0.3.2 contour-traced approximation with the
+ * official brand vector path data. Source: `Xzibit X RGB.svg` from the brand pack,
+ * preserved at `apps/standards/docs/brand/`. The mark fills teal (#19B1A1, Pantone
+ * 3262 CP) by default per the Xzibit Brand Colours sheet.
  *
- * Paths are extracted from the canonical raster at
- * `_source-materials/xzibit-ui-draft/brand/xzibit-mark.png` (591×591) via
- * scikit-image `find_contours` + `approximate_polygon(tolerance=2.5)`, normalised
- * to a viewBox of `0 0 100 100`. The two polygon paths are filled (not stroked),
- * so scaling preserves the original proportions and stepped corners exactly.
+ * The mark is asymmetric across the X axis — the right half is offset from the left
+ * half by a small gap at the centre crossing, and each arm has stepped/notched outer
+ * terminations rather than flat or rounded caps. These are the brand-defining details
+ * the previous traced approximation could not reproduce.
  *
- * v0.3.2 (2026-05-24): replaced the v0.1.0–v0.3.1 hand-drawn approximation
- * (4 straight strokes meeting at centre) with the canonical brand geometry.
- *
- * Default usage is decorative (aria-hidden). Provide `ariaLabel` for cases
- * where the mark is the sole semantic content of an interactive element.
+ * Default usage is decorative (aria-hidden). Provide `ariaLabel` for cases where
+ * the mark is the sole semantic content of an interactive element.
  */
 export function XzibitMark({
-  size = 28,
+  size = 22,
   className,
   ariaLabel,
-  fill = 'currentColor',
+  fill = '#19B1A1',
 }: XzibitMarkProps) {
+  // viewBox preserves the brand SVG aspect ratio (54.57 wide, 49.03 tall).
+  const aspectRatio = 54.57 / 49.03;
+  const width = size * aspectRatio;
   return (
     <svg
-      width={size}
+      width={width}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox="0 0 54.57 49.03"
       xmlns="http://www.w3.org/2000/svg"
       role={ariaLabel ? 'img' : 'presentation'}
       aria-label={ariaLabel}
@@ -51,10 +50,8 @@ export function XzibitMark({
       className={className}
       fill={fill}
     >
-      {/* Left half */}
-      <path d="M 36.38 76.90 L 21.32 76.90 L 20.22 76.14 L 19.88 74.79 L 47.46 41.46 L 35.03 26.65 L 26.06 26.65 L 37.82 40.95 L 36.80 42.81 L 35.19 43.74 L 20.56 26.40 L 19.88 24.70 L 21.15 23.10 L 37.06 23.27 L 51.86 41.29 L 51.52 42.64 L 25.97 72.93 L 35.03 73.18 L 41.03 65.99 L 42.47 65.40 L 44.25 68.19 Z" />
-      {/* Right half */}
-      <path d="M 78.51 76.90 L 62.77 76.57 L 48.14 59.05 L 48.31 57.36 L 73.86 26.90 L 64.97 26.65 L 57.70 34.60 L 55.75 31.64 L 63.11 23.10 L 78.85 23.10 L 79.95 25.21 L 52.37 58.38 L 64.81 73.18 L 73.77 73.18 L 62.18 59.05 L 63.54 56.85 L 64.81 56.26 L 79.78 74.11 L 79.95 75.47 Z" />
+      <path d="M52.88,49.03h-12.89c-.5,0-.97-.22-1.29-.6l-12.71-15.14c-.53-.63-.53-1.54,0-2.17L49.26,3.38h-8.48l-5.84,6.96c-.22.26-.63.26-.84,0l-1.47-1.81c-.17-.2-.16-.5,0-.7l6.06-7.22c.32-.38.8-.6,1.29-.6h12.89c.66,0,1.25.38,1.53.98.28.59.18,1.3-.24,1.8l-24.68,29.42,11.29,13.45h8.48l-10.71-12.77c-.17-.21-.17-.51,0-.71l1.53-1.73c.22-.25.61-.25.83.01l13.26,15.81c.42.5.51,1.2.24,1.8-.28.6-.87.98-1.53.98Z" />
+      <path d="M14.58,49.03H1.69c-.66,0-1.25-.38-1.53-.98-.28-.59-.18-1.3.24-1.8l24.68-29.42L13.79,3.38H5.31l10.82,12.89c.17.21.17.51,0,.71l-1.52,1.75c-.22.25-.62.25-.83,0L.39,2.78C-.03,2.27-.12,1.57.16.98c.28-.6.87-.98,1.53-.98h12.89c.5,0,.97.22,1.29.6l12.71,15.14c.53.63.53,1.54,0,2.17L5.31,45.65h8.48l5.86-6.98c.22-.26.61-.26.83,0l1.53,1.74c.18.2.18.51,0,.71l-6.14,7.32c-.32.38-.8.6-1.29.6Z" />
     </svg>
   );
 }

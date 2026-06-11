@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { BackToLauncher } from './BackToLauncher';
 import { AppsDropdown } from './AppsDropdown';
 
@@ -13,11 +14,7 @@ export interface TopBarProps {
   /**
    * @deprecated as of v0.3.3 — render `<BuildBadge sha={...} />` in your root
    * layout instead. The TopBar no longer displays the build badge internally;
-   * this prop is ignored and will be removed in v0.4. The new badge sits as a
-   * fixed overlay in the corner of the viewport (see BuildBadge component) and
-   * supports white-pill styling that's more legible than the previous in-bar
-   * faint-text treatment. Reference impl: xzibit-apps/launcher root layout
-   * (Staff App style, 2026-05-28).
+   * this prop is ignored. Will be removed in v0.5.
    */
   buildSha?: string;
 
@@ -31,18 +28,32 @@ export interface TopBarProps {
 
   /** Override the /api/me/apps endpoint for the dropdown. */
   appsEndpoint?: string;
+
+  /**
+   * Optional right-aligned slot content (v0.4.0+). Typically used to pass a
+   * `<FeedbackButton>` for the in-app feedback widget, but accepts any node.
+   * If unset, the bar has no right-side content (the build badge overlay
+   * sits outside the bar at z-index 9999 regardless).
+   */
+  rightSlot?: ReactNode;
 }
 
 /**
  * Universal 44px fixed top bar across every Xzibit App.
  *
- * Per DESIGN-STANDARD v2.3 + v2.3.1 §Top Bar:
- * - Absorbs back-to-launcher anchor + app wordmark + build badge
- * - Adds Apps dropdown (dynamic data, sectioned + within-section alphabetical)
- * - Sits above the left rail (Pattern A apps) at z-index 100
- * - Page content offsets `margin-top: 44px`
+ * v0.4.0 (2026-06-11) visual amendment, API unchanged except optional `rightSlot`:
+ * - Background corrected to brand Pantone 433 C (#1D252D). The old #252E38 was drift.
+ * - The BackToLauncher anchor now renders the brand lockup: grid icon, X mark
+ *   teal, Xzibit wordmark white, "Apps" qualifier. No chevron.
+ * - App identity dot is 6px brand teal. App name is 15px / 500 / white.
+ * - Apps dropdown trigger label is unchanged ("Apps").
+ * - Optional `rightSlot` lets apps mount a FeedbackButton or other right-aligned
+ *   content at the right edge of the bar's content area, with a 200px right
+ *   padding reserved for the BuildBadge corner overlay.
  *
- * Reference impl: xzibit-apps/erp-overview SHA 6f1a5b5+
+ * Per DESIGN-STANDARD v2.6 §Top Bar + §Build Badge.
+ *
+ * Reference impl: xzibit-apps/launcher root layout SHA TBD post v0.4.0 adoption.
  */
 export function TopBar({
   appName,
@@ -51,17 +62,17 @@ export function TopBar({
   buildTimestamp: _deprecatedBuildTimestamp,
   launcherUrl,
   appsEndpoint,
+  rightSlot,
 }: TopBarProps) {
   if (
     typeof console !== 'undefined' &&
     (_deprecatedBuildSha || _deprecatedBuildTimestamp)
   ) {
-    // One-shot deprecation warning. Surface loudly so consumers migrate.
     // eslint-disable-next-line no-console
     console.warn(
-      '[@xzibit/ui] <TopBar buildSha|buildTimestamp> props are deprecated as of v0.3.3. ' +
+      '[@xzibit/ui] <TopBar buildSha|buildTimestamp> props were deprecated in v0.3.3. ' +
         'Render <BuildBadge sha={...} timestamp={...} /> in your root layout instead. ' +
-        'The props are ignored and will be removed in v0.4.'
+        'The props are ignored and will be removed in v0.5.'
     );
   }
 
@@ -74,11 +85,14 @@ export function TopBar({
         right: 0,
         height: '44px',
         zIndex: 100,
-        background: 'var(--xz-charcoal, #252E38)',
+        background: 'var(--xz-charcoal, #1D252D)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '0 1rem',
+        // Right padding reserves space for the BuildBadge corner overlay
+        // so the rightSlot content (e.g. FeedbackButton) does not collide with it.
+        padding: '0 200px 0 0.875rem',
         display: 'flex',
         alignItems: 'center',
+        gap: '10px',
       }}
     >
       <a
@@ -101,10 +115,14 @@ export function TopBar({
       <VerticalSeparator />
       <AppsDropdown endpoint={appsEndpoint} />
 
-      {/*
-        Build badge moved out of TopBar in v0.3.3 — render <BuildBadge /> in
-        root layout instead. See BuildBadge component + CHANGELOG v0.3.3.
-      */}
+      {rightSlot && (
+        <>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            {rightSlot}
+          </div>
+        </>
+      )}
     </header>
   );
 }
@@ -115,8 +133,8 @@ function VerticalSeparator() {
       aria-hidden="true"
       style={{
         width: '1px',
-        height: '26px',
-        background: 'rgba(255, 255, 255, 0.08)',
+        height: '18px',
+        background: 'rgba(255, 255, 255, 0.16)',
         flexShrink: 0,
       }}
     />
@@ -134,22 +152,23 @@ function AppWordmark({
     <a
       href={appHomeUrl}
       style={{
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: '8px',
-        padding: '0 1rem',
-        height: '44px',
+        padding: '0 0.5rem',
+        height: '32px',
         textDecoration: 'none',
         color: '#ffffff',
-        fontSize: '18px',
+        fontSize: '15px',
         fontWeight: 500,
+        whiteSpace: 'nowrap',
       }}
     >
       <span
         aria-hidden="true"
         style={{
-          width: '4px',
-          height: '4px',
+          width: '6px',
+          height: '6px',
           background: 'var(--xz-teal, #19B1A1)',
           borderRadius: '50%',
           display: 'inline-block',
@@ -160,10 +179,3 @@ function AppWordmark({
     </a>
   );
 }
-
-/*
-  The in-bar BuildBadge helper was removed in v0.3.3. The canonical BuildBadge
-  now lives as a top-level exported component (src/BuildBadge.tsx) that renders
-  a fixed-position white pill in the corner of the viewport, ALONGSIDE the
-  TopBar rather than inside it. See CHANGELOG v0.3.3.
-*/
