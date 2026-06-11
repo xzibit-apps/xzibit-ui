@@ -2,6 +2,91 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.6.0] — 2026-06-11
+
+The shared bar now ships the **full** feedback tool. Until now the rich widget —
+screenshot capture, annotate (pen/box/arrow/text), AI clarifier, client diagnostics
+— lived only in the launcher, and `@xzibit/ui` carried a lighter form-only panel.
+v0.6.0 lifts the launcher's widget into the package, decoupled from launcher glue,
+so every app that adopts the bar gets the identical rich tool.
+
+This is a minor bump (0.6.0) because it adds runtime dependencies and changes the
+`<FeedbackButton>` API from a dumb trigger to a self-contained orchestrator. Apps on
+`^0.5.0` keep that version until they explicitly move to `^0.6.0` — deliberate, so the
+new dependencies and API land on purpose rather than via a routine install.
+
+### Added
+
+- **`<ScreenshotAnnotator>`** — new export. Dependency-free canvas markup (pen / box /
+  arrow / text, all in red) that flattens onto the screenshot PNG on Done.
+- **Diagnostics collector** — `installDiagnostics()` + `collectClientDiagnostics()`
+  (+ `scrub`, types). A tiny always-on ring buffer of the last ~20 client errors and
+  the last failed request, secret-scrubbed, attached to each submission as
+  `client_diagnostics`.
+- **`FeedbackPayload`** type is now exported.
+
+### Changed (API + behaviour)
+
+- **`<FeedbackButton>` is now a self-contained orchestrator.** Same teal pill visuals
+  as 0.5.0 (unchanged — dark-on-teal text, 8px radius, 32px tall), but it now owns the
+  whole flow internally: installs diagnostics on mount, captures + lets the user
+  annotate a screenshot on open, runs the optional clarifier on Send, and POSTs to
+  `submitUrl`. New props: `submitUrl`, `clarifyUrl?`, `appName`, `userEmail?`,
+  `buildSha?`, `credentials?`, `disabled?`, `onResult?`. **The v0.5.0 `onClick` prop is
+  removed** — the button no longer needs the app to manage open state or render the panel.
+- **`<FeedbackPanel>` is now the rich Radix-dialog widget** (screenshot row, annotate,
+  clarifier), replacing the native-`<dialog>` form. Its props change to the
+  presentational `onSubmit`/`clarify` shape; `<FeedbackButton>` wires them. Apps that
+  rendered `<FeedbackPanel>` directly should move to `<FeedbackButton>`.
+
+### Dependencies
+
+- Adds `@radix-ui/react-dialog`, `lucide-react`, and `html2canvas`. `html2canvas` is
+  loaded via dynamic `import()` (code-split) so it only downloads when a user opens the
+  feedback panel — no main-bundle cost on normal page loads.
+
+### Decoupling (package owns no app specifics)
+
+- No auth client (`authenticatedFetch`/`useAuth`) — plain `fetch(submitUrl, { credentials: 'include' })`.
+- No toast dependency (`notistack`) — inline success/error in the panel + optional `onResult`.
+- No router — `window.location.pathname` for the route.
+- `appName` is a prop, not derived from the path.
+
+### Migration from v0.5.0
+
+```tsx
+// v0.5.0 — dumb trigger + app-managed panel.
+const [open, setOpen] = useState(false);
+<TopBar rightSlot={<><BuildBadge .../><FeedbackButton onClick={() => setOpen(true)} /></>} />
+<FeedbackPanel open={open} onClose={() => setOpen(false)} appName="ERP Overview" submitUrl="…" />
+
+// v0.6.0 — self-contained. No open state, no separate panel.
+<TopBar rightSlot={
+  <>
+    <BuildBadge .../>
+    <FeedbackButton
+      appName="ERP Overview"
+      submitUrl="https://xzibit-apps.vercel.app/api/feedback"
+      clarifyUrl="https://xzibit-apps.vercel.app/api/feedback/clarify"
+      buildSha={BUILD_SHA}
+      userEmail={user.email}
+    />
+  </>
+} />
+```
+
+### Acceptance test
+
+In the published tarball:
+
+- `grep -c "FeedbackPanel" dist/index.d.ts` returns ≥1 (still exported).
+- `grep -c "ScreenshotAnnotator" dist/index.d.ts` returns ≥1 (new export).
+- `grep -c "borderRadius: 8" dist/index.js` returns ≥1 (the pill shape is retained).
+- `grep -c "320px" dist/index.js` returns 0 (no right-reservation hack).
+- `grep -ci "authenticatedFetch\|notistack\|useAuth" dist/index.js` returns 0 (decoupled).
+
+---
+
 ## [0.5.0] — 2026-06-11
 
 Joel-driven visual revision after iterating on three mockup rounds against the live ERP Overview v0.4.2 deploy. Build provenance and feedback now pair as two matching pills on the right side of the TopBar. The corner overlay positioning that v0.3.3 introduced is retired.

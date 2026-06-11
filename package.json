@@ -1,6 +1,6 @@
 {
   "name": "@xzibit/ui",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Shared chrome components for the Xzibit Apps portfolio. v0.1: TopBar + BackToLauncher + AppsDropdown + XzibitMark + useApps hook. Single source of truth for portfolio chrome — tweak once, every app picks it up on next deploy.",
   "license": "MIT",
   "author": "Xzibit Apps",
@@ -46,17 +46,22 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "tsup": "^8.0.0",
-    "esbuild-plugin-preserve-directives": "^0.0.11",
+    "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@types/node": "^20.0.0"
+    "esbuild-plugin-preserve-directives": "^0.0.11",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.16",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^0.545.0"
   }
 }

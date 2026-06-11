@@ -24,7 +24,13 @@ export { FeedbackButton } from './FeedbackButton';
 export type { FeedbackButtonProps } from './FeedbackButton';
 
 export { FeedbackPanel } from './FeedbackPanel';
-export type { FeedbackPanelProps, FeedbackType } from './FeedbackPanel';
+export type { FeedbackPanelProps, FeedbackPayload, FeedbackType } from './FeedbackPanel';
+
+export { ScreenshotAnnotator } from './ScreenshotAnnotator';
+export type { ScreenshotAnnotatorProps } from './ScreenshotAnnotator';
+
+export { installDiagnostics, collectClientDiagnostics, scrub } from './diagnostics';
+export type { ClientDiagnostics, DiagError, FailedRequest } from './diagnostics';
 
 export { useApps } from './useApps';
 export type { UseAppsResult, UseAppsOptions } from './useApps';
