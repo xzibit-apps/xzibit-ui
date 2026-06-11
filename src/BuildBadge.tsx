@@ -4,30 +4,41 @@ export interface BuildBadgeProps {
 
   /**
    * Build timestamp — pre-formatted on the consumer side OR raw ISO string.
-   * If an ISO string is passed, the badge formats it in Brisbane time (`en-AU`,
-   * `Australia/Brisbane`, 12-hour). If a non-ISO string is passed, it renders as-is.
-   * Recommended: pass the ISO from `process.env.NEXT_PUBLIC_BUILD_TIME` and let
-   * the badge format consistently.
+   * If an ISO string is passed, the badge renders a condensed Brisbane time
+   * format ("11 June 3:25 pm") on the second line. The native `title` tooltip
+   * carries the full long form ("11 June 2026, 3:25 pm AEST") for hover.
    */
   timestamp?: string;
-
-  /**
-   * Position corner. Default `'top-right'`. The badge is fixed-positioned and
-   * z-index 9999 so it sits above app chrome (including the TopBar).
-   */
-  position?: 'top-right' | 'top-left';
 }
 
 const ISO_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
 
-function formatTimestamp(input: string): string {
+function formatCondensed(input: string): string {
+  if (!ISO_REGEX.test(input)) return input;
+  const d = new Date(input);
+  if (Number.isNaN(d.getTime())) return input;
+  const datePart = d.toLocaleString('en-AU', {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Australia/Brisbane',
+  });
+  const timePart = d.toLocaleString('en-AU', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Australia/Brisbane',
+  });
+  return `${datePart} ${timePart}`;
+}
+
+function formatLong(input: string): string {
   if (!ISO_REGEX.test(input)) return input;
   const d = new Date(input);
   if (Number.isNaN(d.getTime())) return input;
   return (
     d.toLocaleString('en-AU', {
       day: 'numeric',
-      month: 'short',
+      month: 'long',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
@@ -38,88 +49,85 @@ function formatTimestamp(input: string): string {
 }
 
 /**
- * Canonical build provenance badge. Small off-white pill in the corner of the
- * viewport, fixed-positioned, displaying SHA and last-updated timestamp.
+ * Canonical build provenance badge. Inline rounded-rectangle pill that pairs
+ * with `<FeedbackButton>` on the right side of the TopBar.
  *
- * Per DESIGN-STANDARD v2.6 §Build Badge:
- * - Off-white background (#F4F4F2, a UI utility shade)
- * - Soft subtle shadow so the bubble lifts off the dark TopBar
- * - Monospace SHA in brand dark #1D252D
- * - Separator middot in border colour, then "Last updated {timestamp}" in muted grey
- * - Bottom-left corner radius 6px, looks like a tab attached to the corner
- * - Fixed top-right (default), z-index 9999, above the TopBar's 100
- * - Brisbane time formatting if a raw ISO string is passed
+ * Per DESIGN-STANDARD v2.6.2 §Build Badge (2026-06-11 revision):
+ * - Off-white background `#F4F4F2`, 1px `var(--border)` outline, 8px corner
+ *   radius to match the FeedbackButton shape.
+ * - 32px tall to pair visually with FeedbackButton at the same height.
+ * - Two centred lines: SHA in 11px monospace / 500 / brand dark on top,
+ *   condensed Brisbane time in 10px / muted underneath.
+ * - Native `title` attribute carries the long form for hover, so power users
+ *   still get the full year + AEST timestamp without cluttering the UI.
  *
- * Render in your root layout, alongside (not inside) `<TopBar />`. Pattern:
+ * v0.5.0 (2026-06-11) replaces the v0.3.3 fixed-corner overlay model with an
+ * inline component. The `position` prop is gone. Apps compose the badge and
+ * the feedback button together inside `<TopBar rightSlot={...}>`:
  *
  * ```tsx
- * export default function RootLayout({ children }) {
- *   return (
- *     <html>
- *       <body>
- *         <TopBar appName="ERP Overview" />
- *         <BuildBadge
- *           sha={process.env.NEXT_PUBLIC_BUILD_SHA ?? 'local'}
- *           timestamp={process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString()}
- *         />
- *         <main style={{ marginTop: 44 }}>{children}</main>
- *       </body>
- *     </html>
- *   );
- * }
+ * <TopBar
+ *   appName="ERP Overview"
+ *   rightSlot={
+ *     <>
+ *       <BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />
+ *       <FeedbackButton onClick={() => setOpen(true)} />
+ *     </>
+ *   }
+ * />
  * ```
  *
- * The deprecated `buildSha` / `buildTimestamp` props on `<TopBar />` are ignored
- * as of v0.3.3 and will be removed in v0.5. See CHANGELOG.
+ * The TopBar's rightSlot wrapper applies a small gap between siblings, so the
+ * two pills sit neatly adjacent without consumer-side spacing concerns.
  */
-export function BuildBadge({
-  sha,
-  timestamp,
-  position = 'top-right',
-}: BuildBadgeProps) {
-  const formatted = timestamp ? formatTimestamp(timestamp) : undefined;
-  const isLeft = position === 'top-left';
+export function BuildBadge({ sha, timestamp }: BuildBadgeProps) {
+  const condensed = timestamp ? formatCondensed(timestamp) : undefined;
+  const long = timestamp ? formatLong(timestamp) : undefined;
+  const tooltip = long ? `Build ${sha}, updated ${long}` : `Build ${sha}`;
 
   return (
     <div
-      aria-hidden="true"
+      aria-label={tooltip}
+      title={tooltip}
       style={{
-        position: 'fixed',
-        top: 0,
-        right: isLeft ? undefined : 0,
-        left: isLeft ? 0 : undefined,
-        zIndex: 9999,
-        background: 'var(--xz-off-white, #F4F4F2)',
-        borderBottom: '1px solid var(--border, #E2E4E5)',
-        borderLeft: isLeft ? 'none' : '1px solid var(--border, #E2E4E5)',
-        borderRight: isLeft ? '1px solid var(--border, #E2E4E5)' : 'none',
-        borderBottomLeftRadius: isLeft ? 0 : 6,
-        borderBottomRightRadius: isLeft ? 6 : 0,
-        padding: '0.25rem 0.625rem',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: '0.4rem',
-        fontSize: '0.6875rem',
-        color: 'var(--muted-foreground, #888A8B)',
-        fontFamily: 'inherit',
-        lineHeight: 1,
+        justifyContent: 'center',
+        height: 32,
+        padding: '0 14px',
+        background: 'var(--xz-off-white, #F4F4F2)',
+        border: '1px solid var(--border, #E2E4E5)',
+        borderRadius: 8,
+        color: 'var(--foreground, #1D252D)',
+        flexShrink: 0,
+        lineHeight: 1.1,
         boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        cursor: 'help',
+        fontFamily: 'inherit',
       }}
     >
       <span
         style={{
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          fontSize: 11,
+          fontWeight: 500,
           letterSpacing: '0.02em',
-          color: 'var(--foreground, #1D252D)',
         }}
       >
         {sha}
       </span>
-      {formatted && (
-        <>
-          <span style={{ color: 'var(--border, #E2E4E5)' }}>·</span>
-          <span>Last updated {formatted}</span>
-        </>
+      {condensed && (
+        <span
+          style={{
+            fontSize: 10,
+            color: 'var(--muted-foreground, #888A8B)',
+            marginTop: 1,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {condensed}
+        </span>
       )}
     </div>
   );

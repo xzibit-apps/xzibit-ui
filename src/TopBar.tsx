@@ -30,12 +30,21 @@ export interface TopBarProps {
   appsEndpoint?: string;
 
   /**
-   * Optional right-aligned slot content (v0.4.0+). Typically used to pass a
-   * `<FeedbackButton>` for the in-app feedback widget, but accepts any node.
-   * The bar reserves 320px of right padding (v0.4.1+) so the slot's content
-   * sits clear of the BuildBadge corner overlay at full Brisbane-time format.
-   * If unset, the bar has no right-side content (the build badge overlay
-   * sits outside the bar at z-index 9999 regardless).
+   * Optional right-aligned slot content (v0.4.0+). Typically used to pair
+   * `<BuildBadge>` and `<FeedbackButton>` inside a fragment so both sit on
+   * the right side of the bar with consistent spacing:
+   *
+   * ```tsx
+   * rightSlot={
+   *   <>
+   *     <BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />
+   *     <FeedbackButton onClick={() => setOpen(true)} />
+   *   </>
+   * }
+   * ```
+   *
+   * The slot wrapper is a flex row with 8px gap, so multiple children space
+   * cleanly without consumer-side margins. Accepts any ReactNode.
    */
   rightSlot?: ReactNode;
 }
@@ -89,12 +98,10 @@ export function TopBar({
         zIndex: 100,
         background: 'var(--xz-charcoal, #1D252D)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        // Right padding reserves space for the BuildBadge corner overlay
-        // so the rightSlot content (e.g. FeedbackButton) does not collide with it.
-        // 320px clears the full Brisbane-time format like
-        // "1730556 · Last updated 11 Jun 2026, 8:00 am AEST" (~310px wide).
-        // v0.4.1 bump from 200px after Joel caught the overlap on ERP Overview.
-        padding: '0 320px 0 0.875rem',
+        // v0.5.0 returns to symmetric padding. BuildBadge is no longer a
+        // corner overlay; it sits inline inside rightSlot alongside FeedbackButton,
+        // so the fixed right-reservation that v0.4.1 added is no longer needed.
+        padding: '0 0.875rem',
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
@@ -123,7 +130,14 @@ export function TopBar({
       {rightSlot && (
         <>
           <div style={{ flex: 1 }} />
-          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              flexShrink: 0,
+            }}
+          >
             {rightSlot}
           </div>
         </>

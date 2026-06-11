@@ -16,28 +16,35 @@ export interface FeedbackButtonProps {
 /**
  * Feedback pill for the TopBar's right slot.
  *
- * v0.4.0 (2026-06-11): NEW exported component per DESIGN-STANDARD v2.6 §Top Bar.
+ * v0.5.0 (2026-06-11) visual revision:
+ * - Rounded rectangle (8px border-radius) to pair with the new inline
+ *   `<BuildBadge>` shape. The previous full-pill rounding is gone.
+ * - 32px tall to match BuildBadge.
+ * - 14px / 500 text (was 13px / 500), 16px horizontal padding, 16px icon.
+ * - Reads as a primary action rather than chrome.
+ *
+ * Per DESIGN-STANDARD v2.6.2 §Top Bar.
  *
  * Visual:
  * - Teal fill (#19B1A1, Pantone 3262 CP brand teal)
- * - Dark text (#1D252D, brand Pantone 433 C). White on teal fails WCAG AA at
+ * - Dark text (#1D252D, Pantone 433 C). White on teal fails WCAG AA at
  *   2.7:1 contrast; dark on teal passes at 5.8:1.
- * - Message icon (inline SVG), label "Feedback"
- * - 28px tall, full pill radius, 12px horizontal padding
- * - Subtle background brighten on hover
  *
- * Render via the TopBar's `rightSlot` prop:
+ * Render via the TopBar's `rightSlot` prop, typically paired with `<BuildBadge>`:
  *
  * ```tsx
  * <TopBar
  *   appName="ERP Overview"
- *   rightSlot={<FeedbackButton onClick={() => setFeedbackOpen(true)} />}
+ *   rightSlot={
+ *     <>
+ *       <BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />
+ *       <FeedbackButton onClick={() => setOpen(true)} />
+ *     </>
+ *   }
  * />
  * ```
  *
- * Pair with a `<FeedbackPanel>` modal (queued for v0.4.x) per the in-app
- * feedback widget ADR f26c4824. The modal handles the form, the screenshot
- * capture, and the submission. This component is just the trigger.
+ * Pair with `<FeedbackPanel>` for the modal that this button opens.
  */
 export function FeedbackButton({
   onClick,
@@ -59,14 +66,14 @@ export function FeedbackButton({
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 6,
-        height: 28,
-        padding: '0 12px',
+        gap: 7,
+        height: 32,
+        padding: '0 16px',
         background: hover ? '#1FC2B1' : 'var(--xz-teal, #19B1A1)',
         color: 'var(--xz-charcoal, #1D252D)',
         border: 'none',
-        borderRadius: 999,
-        fontSize: 13,
+        borderRadius: 8,
+        fontSize: 14,
         fontWeight: 500,
         cursor: 'pointer',
         fontFamily: 'inherit',
@@ -75,8 +82,8 @@ export function FeedbackButton({
       }}
     >
       <svg
-        width={14}
-        height={14}
+        width={16}
+        height={16}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

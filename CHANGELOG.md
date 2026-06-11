@@ -2,6 +2,68 @@
 
 All notable changes to `@xzibit/ui` are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/) loosely; versioning follows [SemVer](https://semver.org/).
 
+## [0.5.0] — 2026-06-11
+
+Joel-driven visual revision after iterating on three mockup rounds against the live ERP Overview v0.4.2 deploy. Build provenance and feedback now pair as two matching pills on the right side of the TopBar. The corner overlay positioning that v0.3.3 introduced is retired.
+
+This is a minor version bump (0.5.0) because the `<BuildBadge>` rendering model changed from fixed-position overlay to inline component. Apps consuming v0.4.x render `<BuildBadge>` as a sibling in their root layout (it absolute-positioned itself to the corner). v0.5.0 expects `<BuildBadge>` to live inside `<TopBar rightSlot={...}>` instead. Consumer migration is one line of layout JSX. See the migration section below.
+
+### Changed (visual + API)
+
+- **`<BuildBadge>` is now inline.** No more `position: fixed; top: 0; right: 0; z-index: 9999`. The badge renders as a rounded-rectangle pill (32px tall, 8px corner radius, `var(--xz-off-white)` background, 1px `var(--border)` outline, subtle shadow). Two centred lines: SHA in 11px monospace / weight 500 / brand dark on top, condensed Brisbane time in 10px / muted underneath.
+- **`<BuildBadge>` text condensed.** Format goes from `1730556 · Last updated 11 June 2026, 3:25 pm AEST` (~310px wide, in one row) to a two-line stacked layout with `e816ddc` on top and `11 June 3:25 pm` underneath. Drops "Last updated", drops year, drops AEST suffix from the visible text. The full long form (`11 June 2026, 3:25 pm AEST`) stays available as a native tooltip on hover via the `title` attribute.
+- **`<FeedbackButton>` becomes a rounded rectangle.** Previous full-pill rounding (`border-radius: 999px`) becomes 8px to pair visually with the new BuildBadge shape. Height bumps 28px → 32px. Text bumps 13px → 14px. Icon bumps 14px → 16px. Horizontal padding bumps 12px → 16px. The teal fill + dark text stays (WCAG AA 5.8:1).
+- **`<TopBar>` right-padding returns to symmetric.** v0.4.1 introduced a 320px right reservation to clear the BuildBadge corner overlay. With the badge now inline, the reservation is gone. The bar uses standard `0 0.875rem` padding on both sides again.
+- **`<TopBar>`'s rightSlot wrapper now has 8px gap.** Multiple children inside `rightSlot` (typically BuildBadge + FeedbackButton) space cleanly without consumer-side margin code.
+
+### Removed
+
+- **`BuildBadgeProps.position`.** The `'top-right' | 'top-left'` corner-position option no longer applies since the badge is inline. Apps that pinned it to `top-left` (none currently in the portfolio) need to remove the prop.
+
+### Migration from v0.4.x
+
+```tsx
+// v0.4.x. BuildBadge as a separate corner overlay in root layout.
+<TopBar
+  appName="ERP Overview"
+  rightSlot={<FeedbackButton onClick={() => setOpen(true)} />}
+/>
+<BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />   // remove this sibling
+<main>{children}</main>
+
+// v0.5.0. BuildBadge composed inside rightSlot alongside FeedbackButton.
+<TopBar
+  appName="ERP Overview"
+  rightSlot={
+    <>
+      <BuildBadge sha={BUILD_SHA} timestamp={BUILD_TIME} />
+      <FeedbackButton onClick={() => setOpen(true)} />
+    </>
+  }
+/>
+<main>{children}</main>
+```
+
+One small JSX move. No prop-signature changes on the badge itself beyond removing `position`.
+
+### Unchanged
+
+- All other exports (`AppsDropdown`, `BackToLauncher`, `ContentContainer`, `FeedbackPanel`, `useApps`, `XzibitMark`, `XzibitWordmark`, `normalizeApp`) are unchanged from v0.4.2.
+- The v0.4.2 `<FeedbackPanel>` modal continues to work as shipped. v0.5.0 does not touch the feedback submit flow or the cross-origin auth model.
+
+### Acceptance test
+
+In the published tarball:
+
+- `head -3 dist/index.js` still shows `'use client';` (v0.3.1 fix intact).
+- `grep -c "M52.88,49.03" dist/index.js` returns >0 (canonical brand X path data intact).
+- `grep -c "FeedbackPanel" dist/index.d.ts` returns >0 (v0.4.2 modal still exported).
+- `grep -c "borderRadius: 8" dist/index.js` returns ≥2 (BuildBadge and FeedbackButton both at 8px).
+- `grep -c "position: 'fixed'" dist/index.js` returns the count from BuildBadge subtracted (was a few before, now lower). `grep -c "z-index: 9999"` should return 0 from BuildBadge specifically.
+- `grep -c "320px" dist/index.js` returns 0 (the v0.4.1 right-padding hack is gone).
+
+---
+
 ## [0.4.2] — 2026-06-11
 
 The Feedback button finally does something. v0.4.0 shipped the trigger, v0.4.2 ships the modal it opens.
