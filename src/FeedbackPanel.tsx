@@ -11,11 +11,15 @@
  * v0.6.0 (2026-06-11): promoted from the lighter native-<dialog> form to the full
  * rich widget lifted from the launcher — screenshot capture + annotate + AI
  * clarifier. Pairs with <FeedbackButton> and <ScreenshotAnnotator>.
+ *
+ * v0.7.0 (2026-06-12): local image upload — the image slot now accepts a file from
+ * the user's computer (Upload) in addition to the auto-captured screenshot, so users
+ * can attach supporting images (e.g. mockups). Flows through the existing storage path.
  */
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Loader2, Pencil, RefreshCw, X } from 'lucide-react';
+import { AlertCircle, Loader2, Pencil, RefreshCw, Upload, X } from 'lucide-react';
 import { ScreenshotAnnotator } from './ScreenshotAnnotator';
 
 export type FeedbackType = 'bug' | 'idea';
@@ -24,12 +28,17 @@ export interface FeedbackPayload {
   type: FeedbackType;
   title: string;
   description: string;
-  screenshot: string | null; // base64 data URL or null if capture failed
+  screenshot: string | null; // base64 data URL (auto-capture OR a user-uploaded image), or null
   app: string;
   route: string;
   build_sha: string;
   user_email: string;
 }
+
+// Local image upload (v0.7.0). Accept common image types; cap raw size so the
+// base64 payload stays under the route's storage limit.
+const MAX_UPLOAD_BYTES = 4_500_000;
+const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 export interface FeedbackPanelProps {
   open: boolean;
@@ -91,12 +100,35 @@ export function FeedbackPanel({ open, onClose, app, route, buildSha, userEmail, 
   const clarifiedRef = useRef(false); // clarify runs at most once per submission
 
   const descRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const runCapture = useCallback(async () => {
     setCapturing(true);
     const shot = await captureScreenshot();
     setScreenshot(shot);
     setCapturing(false);
+  }, []);
+
+  // Upload a local image from the user's computer into the image slot. Replaces
+  // the current screenshot/image; the result is a data URL that flows through the
+  // existing submit + storage path unchanged. (Retake re-captures the screenshot.)
+  const onPickFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file
+    if (!file) return;
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setError('Please choose an image file (PNG, JPG, GIF or WebP).');
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError('That image is too large — please use one under 4.5 MB.');
+      return;
+    }
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = () => { if (typeof reader.result === 'string') setScreenshot(reader.result); };
+    reader.onerror = () => setError("Couldn't read that file. Try another image.");
+    reader.readAsDataURL(file);
   }, []);
 
   // Reset + capture each time the panel opens.
@@ -315,16 +347,16 @@ export function FeedbackPanel({ open, onClose, app, route, buildSha, userEmail, 
               />
             </Field>
 
-            {/* Screenshot — label, then thumbnail + Retake + Annotate in a row (matches Team Schedule) */}
+            {/* Image — auto-captured screenshot, or upload one from your computer. Thumbnail + actions in a row. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ fontSize: 13, fontWeight: 500 }}>Screenshot</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <label style={{ fontSize: 13, fontWeight: 500 }}>Screenshot or image</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={() => { if (screenshot && !capturing && !submitting) setAnnotating(true); }}
                   disabled={!screenshot || capturing || submitting}
-                  title={screenshot ? 'Annotate screenshot' : undefined}
-                  aria-label="Annotate screenshot"
+                  title={screenshot ? 'Annotate image' : undefined}
+                  aria-label="Annotate image"
                   style={{
                     width: 120, height: 80, borderRadius: 6, border: '1px solid var(--border, #E2E4E5)', overflow: 'hidden', padding: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--xz-off-white, #F4F5F5)',
@@ -333,15 +365,27 @@ export function FeedbackPanel({ open, onClose, app, route, buildSha, userEmail, 
                   }}
                 >
                   {capturing ? <Loader2 size={16} className="fb-spin" />
-                    : screenshot ? <img src={screenshot} alt="Screenshot preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : 'No screenshot'}
+                    : screenshot ? <img src={screenshot} alt="Image preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : 'No image'}
                 </button>
                 <button onClick={() => void runCapture()} disabled={capturing || submitting} style={ghostBtn}>
                   <RefreshCw size={14} /> Retake
                 </button>
+                <button onClick={() => fileInputRef.current?.click()} disabled={capturing || submitting} style={ghostBtn}>
+                  <Upload size={14} /> Upload
+                </button>
                 <button onClick={() => setAnnotating(true)} disabled={!screenshot || capturing || submitting} style={ghostBtn}>
                   <Pencil size={14} /> Annotate
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  onChange={onPickFile}
+                  style={{ display: 'none' }}
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
               </div>
             </div>
 
