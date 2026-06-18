@@ -377,6 +377,9 @@ export function FeedbackPanel({ open, onClose, app, route, buildSha, userEmail, 
                 <button onClick={() => setAnnotating(true)} disabled={!screenshot || capturing || submitting} style={ghostBtn}>
                   <Pencil size={14} /> Annotate
                 </button>
+                <button onClick={() => setScreenshot(null)} disabled={!screenshot || capturing || submitting} style={ghostBtn} title="Remove the screenshot before sending">
+                  <X size={14} /> Remove
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -386,6 +389,12 @@ export function FeedbackPanel({ open, onClose, app, route, buildSha, userEmail, 
                   aria-hidden="true"
                   tabIndex={-1}
                 />
+              </div>
+              {/* Privacy: the screenshot is included by default; the user can drop it before sending. */}
+              <div style={{ fontSize: 11, color: 'var(--muted-foreground, #888A8B)' }}>
+                {screenshot
+                  ? 'Your screenshot is attached. Review it above — use Remove if it shows anything you’d rather not send.'
+                  : 'No screenshot will be sent. Use Retake to re-capture or Upload to add one.'}
               </div>
             </div>
 
